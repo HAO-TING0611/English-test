@@ -79,7 +79,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
-        .nav-brand { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; background: linear-gradient(to right, #22d3ee, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-brand { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; background: linear-gradient(to right, #22d3ee, #a78bfa); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
         
         .hamburger { cursor: pointer; opacity: 0.8; transition: 0.3s; }
         .hamburger span { display: block; width: 24px; height: 2px; background: #fff; margin: 5px 0; border-radius: 2px; }
@@ -133,6 +133,7 @@
             transform: translateY(-5px);
             border-color: var(--accent-cyan);
             box-shadow: 0 15px 40px rgba(34, 211, 238, 0.15);
+            will-change: transform;
         }
         
         .card-icon { font-size: 2rem; margin-bottom: 15px; opacity: 0.9; }
@@ -175,6 +176,7 @@
             border-radius: 20px;
             border: 1px solid rgba(255,255,255,0.2);
             background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+            will-change: transform, opacity;
         }
         .q-text { font-size: 1.8rem; font-weight: 500; line-height: 1.4; color: #fff; margin-bottom: 25px; }
         
@@ -191,6 +193,7 @@
             background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);
             border-radius: 16px; color: #e2e8f0; font-size: 1.1rem; cursor: pointer;
             transition: all 0.2s ease; display: flex; align-items: center;
+            will-change: background, border-color;
         }
         .opt-btn:hover { background: rgba(255,255,255,0.08); border-color: #fff; transform: scale(1.01); }
         
@@ -238,11 +241,180 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideOut { to { opacity: 0; transform: translateX(-30px); } }
         
-        .exiting { animation: slideOut 0.3s forwards; }
+        .exiting { animation: slideOut 0.3s forwards; will-change: auto; }
+
+        /* 預加載常用元素 */
+        .view-section, .opt-btn { will-change: auto; }
 
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
+        /* --- 行動裝置優化 (768px 以下) --- */
+        @media (max-width: 768px) {
+            body { height: auto; min-height: 100vh; }
+            
+            #top-nav { height: 60px; padding: 0 20px; }
+            .nav-brand { font-size: 1rem; letter-spacing: 0.5px; }
+            
+            #main-container { margin-top: 60px; padding: 20px 15px; }
+            
+            .view-section { max-width: 100%; }
+            
+            .dash-header h1 { font-size: 1.8rem; margin-bottom: 25px; }
+            .dash-header p { font-size: 0.95rem; }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .dash-card {
+                height: 160px;
+                padding: 20px;
+            }
+            
+            .card-icon { font-size: 1.5rem; margin-bottom: 10px; }
+            .card-title { font-size: 1.1rem; margin-bottom: 5px; }
+            .card-desc { font-size: 0.85rem; line-height: 1.4; }
+            .card-meta { font-size: 0.7rem; letter-spacing: 1px; }
+            
+            .db-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .db-tabs {
+                width: 100%;
+                justify-content: space-around;
+            }
+            
+            .tab-btn {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+                flex: 1;
+                text-align: center;
+            }
+            
+            .db-header .ghost-btn {
+                width: 100%;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .word-h { font-size: 1rem; }
+            .word-trans { font-size: 0.9rem; margin-left: 8px; }
+            .word-sent { font-size: 0.85rem; }
+            
+            .article-box { padding: 20px; margin-bottom: 20px; }
+            .art-t { font-size: 1.2rem; margin-bottom: 12px; }
+            .art-p { font-size: 0.9rem; line-height: 1.6; margin-bottom: 15px; }
+            .art-tr { font-size: 0.85rem; padding-top: 15px; }
+            
+            .quiz-info {
+                font-size: 0.8rem;
+                margin-bottom: 20px;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .question-card {
+                padding: 25px 20px;
+                margin-bottom: 20px;
+                border-radius: 16px;
+            }
+            
+            .q-text {
+                font-size: 1.3rem;
+                line-height: 1.3;
+                margin-bottom: 15px;
+            }
+            
+            .trans-btn {
+                padding: 6px 14px;
+                font-size: 0.75rem;
+            }
+            
+            .trans-text { font-size: 0.9rem; }
+            
+            .options-container { gap: 10px; }
+            
+            .opt-btn {
+                padding: 15px 16px;
+                font-size: 0.95rem;
+            }
+            
+            .opt-btn:active {
+                background: rgba(255,255,255,0.12);
+                border-color: #fff;
+            }
+            
+            .opt-marker {
+                width: 10px;
+                height: 10px;
+                margin-right: 12px;
+            }
+            
+            .score-circle {
+                width: 140px;
+                height: 140px;
+                border-width: 3px;
+                font-size: 3rem;
+                margin-bottom: 20px;
+            }
+            
+            .mistake-card { padding: 15px; margin-bottom: 12px; }
+            
+            .action-btn, .ghost-btn {
+                padding: 10px 25px;
+                font-size: 0.9rem;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .action-btn:active, .ghost-btn:active {
+                transform: scale(0.98);
+            }
+        }
+
+        /* --- 小型手機優化 (480px 以下) --- */
+        @media (max-width: 480px) {
+            #top-nav { height: 56px; padding: 0 15px; }
+            .nav-brand { font-size: 0.9rem; }
+            
+            #main-container { margin-top: 56px; padding: 15px 12px; }
+            
+            .dash-header h1 { font-size: 1.4rem; margin-bottom: 20px; }
+            .dash-header p { font-size: 0.85rem; }
+            
+            .dash-card { height: 150px; padding: 15px; }
+            .card-icon { font-size: 1.2rem; }
+            .card-title { font-size: 1rem; }
+            .card-desc { font-size: 0.8rem; }
+            
+            .question-card { padding: 20px 15px; }
+            .q-text { font-size: 1.1rem; margin-bottom: 12px; }
+            
+            .opt-btn { padding: 12px 14px; font-size: 0.9rem; }
+            .opt-marker { width: 9px; height: 9px; margin-right: 10px; }
+            
+            .score-circle {
+                width: 120px;
+                height: 120px;
+                font-size: 2.5rem;
+                border-width: 2px;
+            }
+            
+            .hamburger span { width: 20px; height: 1.5px; margin: 4px 0; }
+        }
+
+        /* 觸摸設備最佳化 */
+        @media (hover: none) and (pointer: coarse) {
+            .opt-btn:hover { background: rgba(255,255,255,0.02); }
+            .dash-card:hover { transform: none; box-shadow: none; }
+            .action-btn:hover, .ghost-btn:hover { transform: none; }
+        }
     </style>
 </head>
 <body>
@@ -515,6 +687,7 @@
         function renderStudy(type) {
             const container = document.getElementById('study-content');
             container.innerHTML = '';
+            const fragment = document.createDocumentFragment();
 
             if (type === 'all' || type === 'article') {
                 articles.forEach(art => {
@@ -525,15 +698,21 @@
                         <div class="art-p">${art.text}</div>
                         <div class="art-tr">${art.translation}</div>
                     `;
-                    container.appendChild(div);
+                    fragment.appendChild(div);
                 });
             }
 
             if (type === 'all' || type === 'vocab') {
                 const all = [...vocabBank, ...clozeBank];
-                const unique = all.filter((v,i,a)=>a.findIndex(t=>(t.correctWord === v.correctWord))===i);
+                // 使用Map避免O(n²)複雜度的findIndex查詢
+                const seen = new Map();
+                all.forEach(item => {
+                    if (!seen.has(item.correctWord)) {
+                        seen.set(item.correctWord, item);
+                    }
+                });
                 
-                unique.forEach(item => {
+                seen.forEach(item => {
                     const row = document.createElement('div');
                     row.className = 'list-item';
                     const sentence = item.text.replace('______', `<span style="text-decoration:underline;color:var(--accent-cyan)">${item.correctWord}</span>`);
@@ -544,9 +723,11 @@
                         </div>
                         <div class="word-sent">${sentence}</div>
                     `;
-                    container.appendChild(row);
+                    fragment.appendChild(row);
                 });
             }
+            
+            container.appendChild(fragment);
         }
 
         function startQuiz(mode) {
@@ -556,7 +737,8 @@
             else if(mode === 'cloze') source = clozeBank;
             else if(mode === 'comp') source = compBank;
 
-            state.questions = JSON.parse(JSON.stringify(source));
+            // 複製並使用Fisher-Yates原地打亂（避免JSON序列化開銷）
+            state.questions = source.map(q => ({...q}));
             for (let i = state.questions.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [state.questions[i], state.questions[j]] = [state.questions[j], state.questions[i]];
@@ -567,7 +749,7 @@
             state.answers = [];
             state.startTime = Date.now();
             
-            document.getElementById('q-total').innerText = state.questions.length;
+            document.getElementById('q-total').textContent = state.questions.length;
             switchView('view-quiz');
             startTimer();
             loadQuestion();
@@ -580,7 +762,7 @@
             }
 
             const q = state.questions[state.idx];
-            document.getElementById('q-current').innerText = state.idx + 1;
+            document.getElementById('q-current').textContent = state.idx + 1;
             
             const pct = (state.idx / state.questions.length) * 100;
             document.getElementById('bar-fill').style.width = `${pct}%`;
@@ -589,21 +771,31 @@
             box.classList.remove('exiting');
             void box.offsetWidth;
 
+            // 生成選項HTML
+            const optionsHtml = q.options.map((opt, i) => 
+                `<div class="opt-btn" onclick="handleAnswer(${i})" role="radio" aria-label="選項 ${i + 1}: ${opt}">
+                    <div class="opt-marker"></div>
+                    <span>${opt}</span>
+                </div>`
+            ).join('');
+
             box.innerHTML = `
                 <div class="question-card">
                     <div class="q-text">${q.text}</div>
-                    <button class="trans-btn" onclick="this.nextElementSibling.style.display='block';this.style.display='none'">顯示中文翻譯</button>
-                    <div class="trans-text">${q.translation}</div>
+                    <button class="trans-btn" onclick="toggleTranslation(this)" aria-label="顯示或隱藏中文翻譯">顯示中文翻譯</button>
+                    <div class="trans-text" role="region" aria-live="polite">${q.translation}</div>
                 </div>
-                <div class="options-container">
-                    ${q.options.map((opt, i) => `
-                        <div class="opt-btn" onclick="handleAnswer(${i})">
-                            <div class="opt-marker"></div>
-                            <span>${opt}</span>
-                        </div>
-                    `).join('')}
+                <div class="options-container" role="radiogroup" aria-label="選擇答案">
+                    ${optionsHtml}
                 </div>
             `;
+        }
+
+        function toggleTranslation(btn) {
+            const transDiv = btn.nextElementSibling;
+            const isShown = transDiv.style.display === 'block';
+            transDiv.style.display = isShown ? 'none' : 'block';
+            btn.textContent = isShown ? '顯示中文翻譯' : '隱藏中文翻譯';
         }
 
         function handleAnswer(choiceIdx) {
@@ -637,30 +829,46 @@
         function startTimer() {
             clearInterval(state.timer);
             const el = document.getElementById('timer');
-            state.timer = setInterval(() => {
-                const diff = Math.floor((Date.now() - state.startTime) / 1000);
+            const startTime = state.startTime;
+            
+            function updateTime() {
+                const diff = Math.floor((Date.now() - startTime) / 1000);
                 const m = String(Math.floor(diff / 60)).padStart(2, '0');
                 const s = String(diff % 60).padStart(2, '0');
-                el.innerText = `${m}:${s}`;
-            }, 1000);
+                el.textContent = `${m}:${s}`;
+            }
+            
+            // 立即更新第一次
+            updateTime();
+            // 然後每秒更新
+            state.timer = setInterval(updateTime, 1000);
         }
 
         function endQuiz() {
             clearInterval(state.timer);
             document.getElementById('bar-fill').style.width = '100%';
             
-            const final = Math.round((state.score / state.questions.length) * 100);
-            document.getElementById('final-score').innerText = final;
+            const totalQuestions = state.questions.length || 1;
+            const final = Math.round((state.score / totalQuestions) * 100);
+            document.getElementById('final-score').textContent = final;
             
             const diff = Math.floor((Date.now() - state.startTime) / 1000);
-            document.getElementById('time-taken').innerText = `總耗時: ${Math.floor(diff/60)}分 ${diff%60}秒`;
+            const mins = Math.floor(diff / 60);
+            const secs = diff % 60;
+            document.getElementById('time-taken').textContent = `總耗時: ${mins} 分 ${secs} 秒`;
 
             const container = document.getElementById('mistake-container');
             container.innerHTML = '';
+            const fragment = document.createDocumentFragment();
             
             const wrong = state.answers.filter(a => !a.isCorrect);
             if (wrong.length === 0) {
-                container.innerHTML = '<div style="color:var(--success); text-align:center; padding:20px;">太強了！全對！</div>';
+                const perfectMsg = document.createElement('div');
+                perfectMsg.style.color = 'var(--success)';
+                perfectMsg.style.textAlign = 'center';
+                perfectMsg.style.padding = '20px';
+                perfectMsg.textContent = '太強了！全對！';
+                fragment.appendChild(perfectMsg);
             } else {
                 wrong.forEach(w => {
                     const item = document.createElement('div');
@@ -673,17 +881,58 @@
                             <span style="color:var(--success)">正確答案: ${w.q.options[w.q.answer]}</span>
                         </div>
                     `;
-                    container.appendChild(item);
+                    fragment.appendChild(item);
                 });
             }
-
+            
+            container.appendChild(fragment);
             switchView('view-result');
         }
 
         function retryQuiz() {
             startQuiz(state.mode);
         }
+
+        // --- 初始化和行動設備優化 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 禁用iOS上的放大縮小
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (viewport) {
+                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+            }
+            
+            // 為所有按鈕添加觸摸反饋
+            const buttons = document.querySelectorAll('.opt-btn, .action-btn, .ghost-btn, .dash-card, .tab-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('touchstart', function() {
+                    this.style.opacity = '0.9';
+                }, {passive: true});
+                
+                btn.addEventListener('touchend', function() {
+                    this.style.opacity = '1';
+                }, {passive: true});
+            });
+            
+            // 防止iOS上的100ms延遲
+            document.addEventListener('touchstart', () => {}, {passive: true});
+            
+            // 阻止雙點放大
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', (e) => {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, {passive: false});
+        });
+
+        // 添加視口變化監聽器
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 100);
+        });
     </script>
 </body>
-
 </html>
