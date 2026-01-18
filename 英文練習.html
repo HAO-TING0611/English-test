@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocab Master - Liquid Glass Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+        :root {
+            /* Liquid Glass Theme Palette */
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #115e59 100%);
+            --glass-surface: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-highlight: rgba(255, 255, 255, 0.08);
+            
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #22d3ee;
+            --accent-purple: #a78bfa;
+            
+            --success: #34d399;
+            --error: #f87171;
+            
+            --blob-radius: 24px; /* Soft rounding */
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: var(--bg-gradient);
+            background-size: 200% 200%;
+            animation: gradientMove 15s ease infinite;
+            color: var(--text-primary);
+            font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- Liquid Glass Card Style --- */
+        .liquid-card {
+            background: var(--glass-surface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 8px 32px 0 rgba(0, 0, 0, 0.3),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            border-radius: var(--blob-radius);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Subtle organic shine effect */
+        .liquid-card::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%);
+            transform: rotate(30deg); pointer-events: none;
+        }
+
+        /* --- Navigation --- */
+        #top-nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 30px; z-index: 1000;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-brand { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; background: linear-gradient(to right, #22d3ee, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .hamburger { cursor: pointer; opacity: 0.8; transition: 0.3s; }
+        .hamburger span { display: block; width: 24px; height: 2px; background: #fff; margin: 5px 0; border-radius: 2px; }
+        .hamburger:hover { opacity: 1; transform: scale(1.1); }
+
+        /* --- Layout --- */
+        #main-container {
+            margin-top: 70px;
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .view-section {
+            display: none;
+            width: 100%;
+            max-width: 900px;
+            animation: floatUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+        .view-section.active { display: block; }
+
+        @keyframes floatUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* --- Dashboard --- */
+        .dash-header { text-align: center; margin-bottom: 50px; }
+        .dash-header h1 { font-size: 2.5rem; font-weight: 300; margin: 0 0 10px 0; letter-spacing: -0.5px; }
+        .dash-header p { color: var(--text-secondary); font-size: 1.1rem; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            width: 100%;
+        }
+
+        .dash-card {
+            padding: 30px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 200px;
+            justify-content: space-between;
+        }
+        .dash-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 15px 40px rgba(34, 211, 238, 0.15);
+        }
+        
+        .card-icon { font-size: 2rem; margin-bottom: 15px; opacity: 0.9; }
+        .card-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 8px; }
+        .card-desc { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.5; }
+        .card-meta { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent-purple); font-weight: 700; margin-top: auto; }
+
+        /* --- Study Database --- */
+        .db-header { display: flex; justify-content: space-between; margin-bottom: 30px; align-items: center; }
+        .db-tabs { display: flex; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 50px; }
+        .tab-btn {
+            background: none; border: none; color: var(--text-secondary); padding: 8px 20px;
+            border-radius: 40px; cursor: pointer; font-size: 0.95rem; transition: 0.3s;
+        }
+        .tab-btn.active { background: var(--accent-cyan); color: #000; font-weight: 600; box-shadow: 0 4px 15px rgba(34, 211, 238, 0.3); }
+
+        .list-item {
+            padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .list-item:last-child { border-bottom: none; }
+        .word-h { font-size: 1.2rem; font-weight: 700; color: var(--accent-cyan); }
+        .word-trans { font-size: 1rem; color: #fff; margin-left: 10px; font-weight: 400; }
+        .word-sent { font-style: italic; color: var(--text-secondary); line-height: 1.6; }
+
+        .article-box { padding: 30px; margin-bottom: 30px; }
+        .art-t { font-size: 1.5rem; color: var(--text-primary); margin-bottom: 15px; font-weight: 700; }
+        .art-p { white-space: pre-wrap; line-height: 1.8; color: #cbd5e1; margin-bottom: 20px; }
+        .art-tr { padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.2); color: var(--text-secondary); font-size: 0.95rem; line-height: 1.8; }
+
+        /* --- Quiz Interface (Ultra Focused) --- */
+        #quiz-progress { position: fixed; top: 70px; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.05); }
+        #bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple)); transition: width 0.4s ease; }
+
+        .quiz-info { display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 0.9rem; color: var(--text-secondary); letter-spacing: 1px; }
+        
+        .question-card {
+            padding: 50px 40px; text-align: center; margin-bottom: 30px;
+            /* Special Organic Border for Question */
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+        }
+        .q-text { font-size: 1.8rem; font-weight: 500; line-height: 1.4; color: #fff; margin-bottom: 25px; }
+        
+        .trans-btn {
+            background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text-secondary);
+            padding: 8px 18px; border-radius: 50px; cursor: pointer; font-size: 0.85rem; transition: 0.3s;
+        }
+        .trans-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); background: rgba(34, 211, 238, 0.05); }
+        .trans-text { margin-top: 20px; color: var(--accent-purple); font-size: 1rem; display: none; animation: fadeIn 0.3s; }
+
+        .options-container { display: grid; gap: 15px; }
+        .opt-btn {
+            width: 100%; padding: 20px 25px; text-align: left;
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; color: #e2e8f0; font-size: 1.1rem; cursor: pointer;
+            transition: all 0.2s ease; display: flex; align-items: center;
+        }
+        .opt-btn:hover { background: rgba(255,255,255,0.08); border-color: #fff; transform: scale(1.01); }
+        
+        .opt-marker { 
+            width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); margin-right: 20px; 
+            transition: 0.3s; flex-shrink: 0;
+        }
+
+        /* States */
+        .opt-btn.selected { border-color: var(--accent-cyan); background: rgba(34, 211, 238, 0.1); color: #fff; }
+        .opt-btn.selected .opt-marker { background: var(--accent-cyan); border-color: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan); }
+        
+        .opt-btn.correct { border-color: var(--success); background: rgba(52, 211, 153, 0.1); color: var(--success); }
+        .opt-btn.correct .opt-marker { background: var(--success); border-color: var(--success); }
+        
+        .opt-btn.wrong { border-color: var(--error); background: rgba(248, 113, 113, 0.1); color: var(--error); }
+        .opt-btn.wrong .opt-marker { background: var(--error); border-color: var(--error); }
+
+        /* --- Result --- */
+        .score-circle {
+            width: 180px; height: 180px; border-radius: 50%; border: 4px solid var(--accent-cyan);
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 30px auto;
+            font-size: 4rem; font-weight: 700; color: #fff; box-shadow: 0 0 30px rgba(34, 211, 238, 0.2);
+            background: rgba(34, 211, 238, 0.05);
+        }
+        
+        .mistake-card {
+            background: rgba(248, 113, 113, 0.05); border: 1px solid rgba(248, 113, 113, 0.2);
+            padding: 20px; border-radius: 12px; margin-bottom: 15px; text-align: left;
+        }
+
+        /* --- Buttons --- */
+        .action-btn {
+            background: #fff; color: #0f172a; border: none; padding: 12px 35px;
+            border-radius: 50px; font-weight: 700; cursor: pointer; font-size: 1rem;
+            transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .action-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(255,255,255,0.3); }
+        .ghost-btn {
+            background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff;
+            padding: 12px 35px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.3s;
+        }
+        .ghost-btn:hover { border-color: #fff; background: rgba(255,255,255,0.1); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideOut { to { opacity: 0; transform: translateX(-30px); } }
+        
+        .exiting { animation: slideOut 0.3s forwards; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <nav id="top-nav">
+        <div class="hamburger" onclick="showDashboard()">
+            <span></span><span></span><span></span>
+        </div>
+        <div class="nav-brand">VOCAB MASTER</div>
+        <div style="width: 24px;"></div>
+    </nav>
+
+    <div id="quiz-progress"><div id="bar-fill"></div></div>
+
+    <div id="main-container">
+
+        <div id="view-dashboard" class="view-section active">
+            <div class="dash-header">
+                <h1>學習儀表板</h1>
+                <p>Unit 11 & 12 總複習計畫</p>
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="liquid-card dash-card" onclick="startQuiz('vocab')">
+                    <div class="card-icon">📝</div>
+                    <div class="card-title">單字測驗 (Vocab)</div>
+                    <div class="card-desc">Unit 11 & 12 完整 58 題高頻單字，包含詞義配對與拼寫檢查。</div>
+                    <div class="card-meta">58 Questions</div>
+                </div>
+
+                <div class="liquid-card dash-card" onclick="startQuiz('cloze')">
+                    <div class="card-icon">📖</div>
+                    <div class="card-title">課文克漏字 (Cloze)</div>
+                    <div class="card-desc">Book a Night Tour & Lan Ren Bao 課文文法與單字填空。</div>
+                    <div class="card-meta">40 Questions (Updated)</div>
+                </div>
+
+                <div class="liquid-card dash-card" onclick="startQuiz('comp')">
+                    <div class="card-icon">💡</div>
+                    <div class="card-title">閱讀理解 (Comp)</div>
+                    <div class="card-desc">測試對文章邏輯與細節的深度理解。</div>
+                    <div class="card-meta">8 Questions</div>
+                </div>
+
+                <div class="liquid-card dash-card" onclick="startStudy()">
+                    <div class="card-icon">📚</div>
+                    <div class="card-title">學習資料庫 (DB)</div>
+                    <div class="card-desc">瀏覽完整單字例句與課文中文翻譯對照。</div>
+                    <div class="card-meta">Review Mode</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-study" class="view-section">
+            <div class="db-header">
+                <div class="db-tabs">
+                    <button class="tab-btn active" onclick="filterStudy(this, 'all')">全部</button>
+                    <button class="tab-btn" onclick="filterStudy(this, 'vocab')">單字庫</button>
+                    <button class="tab-btn" onclick="filterStudy(this, 'article')">課文</button>
+                </div>
+                <button class="ghost-btn" style="padding: 8px 20px;" onclick="showDashboard()">關閉</button>
+            </div>
+            <div id="study-content"></div>
+        </div>
+
+        <div id="view-quiz" class="view-section">
+            <div class="quiz-info">
+                <span>QUESTION <span id="q-current">1</span> / <span id="q-total">10</span></span>
+                <span id="timer">00:00</span>
+            </div>
+            <div id="question-box"></div>
+        </div>
+
+        <div id="view-result" class="view-section" style="text-align: center;">
+            <div class="liquid-card" style="padding: 50px;">
+                <div class="score-circle" id="final-score">0</div>
+                <h2 style="margin:0; font-weight:300;">測驗完成</h2>
+                <p style="color:var(--text-secondary); margin-bottom: 30px;" id="time-taken"></p>
+                
+                <div style="display: flex; justify-content: center; gap: 20px;">
+                    <button class="ghost-btn" onclick="showDashboard()">回儀表板</button>
+                    <button class="action-btn" onclick="retryQuiz()">再測一次</button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 40px; text-align: left;">
+                <h3 style="color:var(--text-primary); margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">錯題檢討</h3>
+                <div id="mistake-container"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. 完整單字題庫 (58題) ---
+        const vocabBank = [
+            { id: "T12-MC-1", text: "Jane will make a good teacher, as she has the ______ to explain difficult concepts in simple ways.", translation: "Jane 會成為好老師，因為她有解釋困難概念的______。", options: ["pain", "action", "density", "ability"], answer: 3, correctWord: "ability", wordTrans: "能力" },
+            { id: "T12-MC-2", text: "The rent for the apartment ______ water and gas, but you have to pay your own electricity bills.", translation: "公寓租金______水和瓦斯，但你得自己付電費。", options: ["includes", "conflicts", "increases", "communicates"], answer: 0, correctWord: "includes", wordTrans: "包含" },
+            { id: "T12-MC-3", text: "Edward read the ______ on the bottle before taking the medicine.", translation: "Edward 服藥前閱讀了瓶子上的______。", options: ["greetings", "reactions", "insults", "instructions"], answer: 3, correctWord: "instructions", wordTrans: "指示/說明書" },
+            { id: "T12-MC-4", text: "The man is still struggling with his ______ memories of the war, which destroyed everything he treasured.", translation: "那人仍在與戰爭的______記憶掙扎。", options: ["inactive", "eventual", "painful", "generous"], answer: 2, correctWord: "painful", wordTrans: "痛苦的" },
+            { id: "T12-MC-5", text: "Poor ______ can lead to misunderstandings at work, which in turn can result in mistakes.", translation: "不良的______會導致工作誤解。", options: ["temptation", "communication", "invasion", "admission"], answer: 1, correctWord: "communication", wordTrans: "溝通" },
+            { id: "T12-MC-6", text: "The two animal species may look nothing alike, but they actually share a common ______.", translation: "這兩種動物看起來不像，但有共同的______。", options: ["pedestrian", "ancestor", "deadline", "grammar"], answer: 1, correctWord: "ancestor", wordTrans: "祖先" },
+            { id: "T12-MC-7", text: "Several accidents happened on the highway because a big fire caused ______ smoke, which blinded drivers.", translation: "大火造成了______煙霧，遮蔽了駕駛視線。", options: ["final", "cheap", "able", "dense"], answer: 3, correctWord: "dense", wordTrans: "濃密的" },
+            { id: "T12-MC-8", text: "Melissa hired a personal trainer to ______ her how to become fit and work out properly.", translation: "Melissa 聘請教練來______她如何健身。", options: ["instruct", "admit", "react", "greet"], answer: 0, correctWord: "instruct", wordTrans: "指導" },
+            { id: "T12-MC-9", text: "In order to meet the tight ______, Owen stayed late in the office for days.", translation: "為了趕上緊迫的______，Owen 在辦公室待了好幾天。", options: ["generosity", "deadline", "tempted", "search"], answer: 1, correctWord: "deadline", wordTrans: "截止日期" },
+            { id: "T12-WB1-1", text: "Kevin ______ his success at school to his wonderful teachers.", translation: "Kevin 把他在學校的成功______給他的好老師。", options: ["owes", "insults", "admits", "increases"], answer: 0, correctWord: "owes", wordTrans: "歸功於/欠" },
+            { id: "T12-WB1-2", text: "Parents should not take sides when there's a ______ between their kids.", translation: "當孩子間發生______時，父母不應偏袒。", options: ["deadline", "conflict", "density", "ancestor"], answer: 1, correctWord: "conflict", wordTrans: "衝突" },
+            { id: "T12-WB1-3", text: "My ______ left southern China and settled in Taiwan over 100 years ago.", translation: "我的______一百多年前離開華南定居台灣。", options: ["insults", "conflicts", "ancestors", "emergencies"], answer: 2, correctWord: "ancestors", wordTrans: "祖先" },
+            { id: "T12-WB1-4", text: "Please prepare some medical kits in case of ______.", translation: "請準備醫藥箱以防______。", options: ["emergency", "density", "communication", "deadline"], answer: 0, correctWord: "emergency", wordTrans: "緊急狀況" },
+            { id: "T12-WB1-5", text: "At first Lucy denied making the mistake, but later she ______ it was her.", translation: "Lucy 起初否認犯錯，但後來她______是她做的。", options: ["increased", "admitted", "owed", "insulted"], answer: 1, correctWord: "admitted", wordTrans: "承認" },
+            { id: "T12-WB1-6", text: "Lisa worked overtime in order to meet her ______.", translation: "Lisa 為了趕上______而加班。", options: ["deadline", "density", "conflict", "insult"], answer: 0, correctWord: "deadline", wordTrans: "截止期限" },
+            { id: "T12-WB1-7", text: "This common hand gesture is actually an ______ in France.", translation: "這個常見手勢在法國其實是一種______。", options: ["emergency", "admission", "insult", "ancestor"], answer: 2, correctWord: "insult", wordTrans: "侮辱" },
+            { id: "T12-WB1-8", text: "It's important for couples to ______ what they're feeling to avoid misunderstandings.", translation: "夫妻______彼此的感受以避免誤會很重要。", options: ["communicate", "owe", "increase", "conflict"], answer: 0, correctWord: "communicate", wordTrans: "溝通" },
+            { id: "T12-WB1-9", text: "Taipei City is crowded because of its high population ______.", translation: "台北市因為人口______高而擁擠。", options: ["density", "emergency", "deadline", "ancestor"], answer: 0, correctWord: "density", wordTrans: "密度" },
+            { id: "T12-WB1-10", text: "Many people think the fine for drunk driving should be ______.", translation: "許多人認為酒駕罰款應該被______。", options: ["admitted", "owed", "increased", "communicated"], answer: 2, correctWord: "increased", wordTrans: "增加" },
+            { id: "T12-WB2-1", text: "The child is very ______ and always shares his toys with other children.", translation: "這孩子非常______，總是分享玩具。", options: ["generous", "inactive", "regular", "misinterpreted"], answer: 0, correctWord: "generous", wordTrans: "慷慨的" },
+            { id: "T12-WB2-2", text: "According to scientific research, our brains are not completely ______ when we are sleeping.", translation: "研究顯示，我們睡覺時大腦並非完全______。", options: ["individual", "regular", "inactive", "risen"], answer: 2, correctWord: "inactive", wordTrans: "不活躍的" },
+            { id: "T12-WB2-3", text: "The old man goes to the hospital for ______ checkups.", translation: "這位老人去醫院做______檢查。", options: ["regular", "eventual", "tempting", "inactive"], answer: 0, correctWord: "regular", wordTrans: "定期的" },
+            { id: "T12-WB2-4", text: "Though it took him years of hard work, Peter ______ obtained his medical degree.", translation: "雖然花了很多年努力，Peter ______獲得了醫學學位。", options: ["eventually", "individually", "regularly", "generously"], answer: 0, correctWord: "eventually", wordTrans: "最終" },
+            { id: "T12-WB2-5", text: "The hotel always tries to satisfy its VIP guests' ______ needs as best as it can.", translation: "飯店總是盡力滿足 VIP 客人的______需求。", options: ["inactive", "individual", "pedestrian", "misinterpreted"], answer: 1, correctWord: "individual", wordTrans: "個人的" },
+            { id: "T12-WB2-6", text: "I have to resist the ______ to eat cheeseburgers because I am on a diet.", translation: "因為在節食，我必須抵抗吃起司漢堡的______。", options: ["temptation", "search", "rise", "pedestrian"], answer: 0, correctWord: "temptation", wordTrans: "誘惑" },
+            { id: "T12-WB2-7", text: "Many people move to the city in ______ of better job opportunities.", translation: "許多人搬到城市______更好的工作機會。", options: ["search", "rise", "temptation", "regular"], answer: 0, correctWord: "search", wordTrans: "尋找" },
+            { id: "T12-WB2-8", text: "The housing prices in this area have ______ sharply in recent years.", translation: "這一區的房價近年來急劇______。", options: ["risen", "searched", "misinterpreted", "inactivated"], answer: 0, correctWord: "risen", wordTrans: "上漲" },
+            { id: "T12-WB2-9", text: "______ should keep to the sidewalks for their own safety.", translation: "______為了安全應該走在人行道上。", options: ["Pedestrians", "Individuals", "Searches", "Temptations"], answer: 0, correctWord: "Pedestrians", wordTrans: "行人" },
+            { id: "T12-WB2-10", text: "The singer was upset that his words were ______ by the press.", translation: "歌手對他的話被媒體______感到不高興。", options: ["misinterpreted", "risen", "generated", "searched"], answer: 0, correctWord: "misinterpreted", wordTrans: "誤解" },
+            { id: "T11-MC-1", text: "______ can drive people to commit crimes, such as stealing money from work.", translation: "______會驅使人犯罪，例如偷錢。", options: ["Height", "Birth", "Price", "Greed"], answer: 3, correctWord: "Greed", wordTrans: "貪婪" },
+            { id: "T11-MC-2", text: "______ in 1917, the university is celebrating its 100th anniversary this year.", translation: "______於 1917 年，該校慶祝百週年。", options: ["Founded", "Charmed", "Explored", "Colored"], answer: 0, correctWord: "Founded", wordTrans: "創立" },
+            { id: "T11-MC-3", text: "The naughty boy ______ his ankle jumping off a high wall.", translation: "頑皮男孩跳牆時______腳踝。", options: ["illustrated", "twisted", "blamed", "repeated"], answer: 1, correctWord: "twisted", wordTrans: "扭傷" },
+            { id: "T11-MC-4", text: "Humor is a ______ quality that draws people like a magnet.", translation: "幽默是一種像磁鐵般吸引人的______特質。", options: ["colorful", "greedy", "charming", "diligent"], answer: 2, correctWord: "charming", wordTrans: "迷人的" },
+            { id: "T11-MC-5", text: "The auto company cut down on production costs by using robots to ______ car parts.", translation: "汽車公司用機器人______零件以降低成本。", options: ["invest", "heighten", "assemble", "absorb"], answer: 2, correctWord: "assemble", wordTrans: "組裝" },
+            { id: "T11-MC-6", text: "Having survived the car accident, the driver is a(n) ______ of how important it is to wear a seatbelt.", translation: "車禍倖存後，司機成為繫安全帶重要性的______。", options: ["exploration", "foundation", "repetition", "illustration"], answer: 3, correctWord: "illustration", wordTrans: "例證" },
+            { id: "T11-MC-7", text: "My ______ to India has changed my impression of the country.", translation: "我的印度______改變了我對該國的印象。", options: ["journey", "layer", "masterwork", "inside"], answer: 0, correctWord: "journey", wordTrans: "旅程" },
+            { id: "T11-MC-8", text: "The worker's ______ paid off in the end; his employer appreciated his hard work.", translation: "工人的______終於有了回報。", options: ["assembly", "diligence", "capability", "investment"], answer: 1, correctWord: "diligence", wordTrans: "勤奮" },
+            { id: "T11-MC-9", text: "I'm afraid I didn't hear your question clearly. Could you ______ it one more time?", translation: "我沒聽清楚，你能______一遍嗎？", options: ["arise", "stationary", "invest", "repeat"], answer: 3, correctWord: "repeat", wordTrans: "重複" },
+            { id: "T11-WB1-1", text: "These photographs ______ how the environment has changed over the years.", translation: "這些照片______了環境多年來的變化。", options: ["illustrate", "blame", "invest", "infect"], answer: 0, correctWord: "illustrate", wordTrans: "說明/描繪" },
+            { id: "T11-WB1-2", text: "The little girl likes to ______ and learn about the world around her.", translation: "小女孩喜歡______並學習周遭世界。", options: ["explore", "absorb", "arise", "blame"], answer: 0, correctWord: "explore", wordTrans: "探索" },
+            { id: "T11-WB1-3", text: "All students are expected to attend the school ______ in the morning.", translation: "所有學生早上都要參加學校______。", options: ["assembly", "standard", "investment", "founder"], answer: 0, correctWord: "assembly", wordTrans: "集會" },
+            { id: "T11-WB1-4", text: "Tom used a rag to ______ the water on the table.", translation: "Tom 用抹布______桌上的水。", options: ["absorb", "infect", "illustrate", "explore"], answer: 0, correctWord: "absorb", wordTrans: "吸收/擦乾" },
+            { id: "T11-WB1-5", text: "Bill Gates is famous for being the ______ of Microsoft.", translation: "Bill Gates 以身為微軟______聞名。", options: ["founder", "assembly", "standard", "blame"], answer: 0, correctWord: "founder", wordTrans: "創辦人" },
+            { id: "T11-WB1-6", text: "Jeff always ______ his own problems on other people.", translation: "Jeff 總是把自己的問題______給別人。", options: ["blames", "invests", "arises", "infects"], answer: 0, correctWord: "blames", wordTrans: "怪罪" },
+            { id: "T11-WB1-7", text: "Thousands of people were ______ with the flu last year.", translation: "去年有數千人______流感。", options: ["infected", "explored", "absorbed", "illustrated"], answer: 0, correctWord: "infected", wordTrans: "感染" },
+            { id: "T11-WB1-8", text: "Peter can work on weekends if the need ______.", translation: "如果有______，Peter 可以週末工作。", options: ["arises", "blames", "invests", "standards"], answer: 0, correctWord: "arises", wordTrans: "出現/發生" },
+            { id: "T11-WB1-9", text: "Mike ______ a quarter of his salary in stocks every month.", translation: "Mike 每個月______四分之一薪水在股票。", options: ["invests", "arises", "explores", "absorbs"], answer: 0, correctWord: "invests", wordTrans: "投資" },
+            { id: "T11-WB1-10", text: "Kate is a hard-working student who sets herself high ______.", translation: "Kate 是個設定高______的用功學生。", options: ["standards", "assemblies", "founders", "investments"], answer: 0, correctWord: "standards", wordTrans: "標準" },
+            { id: "T11-WB2-1", text: "Nina finds imported fruits too expensive, so she only buys ______ ones.", translation: "Nina 覺得進口水果太貴，只買______的。", options: ["domestic", "stationary", "capable", "twisted"], answer: 0, correctWord: "domestic", wordTrans: "國內的" },
+            { id: "T11-WB2-2", text: "Not everybody is ______ of giving a speech before a large crowd.", translation: "不是每個人都______在大眾面前演講。", options: ["capable", "greedy", "diligent", "glorious"], answer: 0, correctWord: "capable", wordTrans: "有能力的" },
+            { id: "T11-WB2-3", text: "Tanya deserves to be promoted because she is a ______ and efficient employee.", translation: "Tanya 值得升遷，因為她是個______且有效率的員工。", options: ["diligent", "stationary", "twisted", "domestic"], answer: 0, correctWord: "diligent", wordTrans: "勤勉的" },
+            { id: "T11-WB2-4", text: "Jason is always bragging about his ______ past to his coworkers.", translation: "Jason 總向同事吹噓他______的過去。", options: ["glorious", "greedy", "stationary", "capable"], answer: 0, correctWord: "glorious", wordTrans: "光榮的" },
+            { id: "T11-WB2-5", text: "Many girls consider Timothy ______ because he always acts like a gentleman.", translation: "許多女生覺得 Timothy ______，因為他舉止像紳士。", options: ["charming", "twisted", "greedy", "domestic"], answer: 0, correctWord: "charming", wordTrans: "迷人的" },
+            { id: "T11-WB2-6", text: "The Mona Lisa is widely considered one of Leonardo da Vinci's ______.", translation: "蒙娜麗莎被廣泛認為是達文西的______之一。", options: ["masterworks", "prices", "standards", "capabilities"], answer: 0, correctWord: "masterworks", wordTrans: "傑作" },
+            { id: "T11-WB2-7", text: "The ______ businessman is never satisfied with his profits.", translation: "這位______的商人對利潤從不滿足。", options: ["greedy", "diligent", "capable", "glorious"], answer: 0, correctWord: "greedy", wordTrans: "貪婪的" },
+            { id: "T11-WB2-8", text: "There were so many cars on the road that the traffic was almost ______.", translation: "路上車太多，交通幾乎______。", options: ["stationary", "domestic", "twisted", "greedy"], answer: 0, correctWord: "stationary", wordTrans: "靜止的" },
+            { id: "T11-WB2-9", text: "Larry's ______ ankle caused him pain for days.", translation: "Larry ______的腳踝讓他痛了好幾天。", options: ["twisted", "capable", "diligent", "stationary"], answer: 0, correctWord: "twisted", wordTrans: "扭傷" },
+            { id: "T11-WB2-10", text: "I bought this dress at a lower ______ because the store was having a sale.", translation: "因為特賣，我用較低的______買了這件洋裝。", options: ["price", "masterwork", "standard", "greedy"], answer: 0, correctWord: "price", wordTrans: "價格" }
+        ];
+
+        // --- 2. 課文克漏字 (Cloze) - UPDATED with NEW QUESTIONS ---
+        const clozeBank = [
+            // Lan Ren Bao (Bold & Key words)
+            { id: "C01", text: "A Lan Ren Bao usually ______ everything in a short page.", translation: "懶人包通常在短短一頁中______所有內容。", options: ["contains", "digests", "crosses", "shortens"], answer: 0, correctWord: "contains", wordTrans: "包含" },
+            { id: "C02", text: "Does the choice of a Lan Ren Bao also ______ your mind very often?", translation: "選擇懶人包這個念頭是否也常______你的腦海？", options: ["cross", "keep", "tell", "rely"], answer: 0, correctWord: "cross", wordTrans: "cross one's mind (想到)" },
+            { id: "C03", text: "Lan Ren Bao is a Chinese ______ for a large amount of information.", translation: "懶人包是大量資訊的中文______。", options: ["term", "staff", "memory", "biology"], answer: 0, correctWord: "term", wordTrans: "術語/名詞" },
+            { id: "C04", text: "It is organized to help people ______ it easily.", translation: "它的編排是為了幫助人們輕鬆______它。", options: ["digest", "retire", "last", "hurry"], answer: 0, correctWord: "digest", wordTrans: "消化/理解" },
+            { id: "C05", text: "It gives an overview of a large ______ of information.", translation: "它提供大______資訊的概覽。", options: ["amount", "variety", "plot", "doubt"], answer: 0, correctWord: "amount", wordTrans: "數量" },
+            { id: "C06", text: "Many newcomers often had trouble ______ the discussions.", translation: "許多新手常在______討論進度上有困難。", options: ["catching up on", "selling out", "falling asleep", "relying on"], answer: 0, correctWord: "catching up on", wordTrans: "跟上/趕上" },
+            { id: "C07", text: "Users gathered information and had them ______ into an article.", translation: "用戶收集資訊並將其______成一篇文章。", options: ["shortened", "complicated", "frequent", "unforgettable"], answer: 0, correctWord: "shortened", wordTrans: "縮短" },
+            { id: "C08", text: "There are a ______ of themes for Lan Ren Baos.", translation: "懶人包有各式各樣的______。", options: ["variety", "plot", "bulb", "doubt"], answer: 0, correctWord: "variety", wordTrans: "多樣化/種類" },
+            { id: "C09", text: "For example, you may want to watch a Marvel ______.", translation: "例如，你可能想看一部漫威______。", options: ["film", "term", "policy", "staff"], answer: 0, correctWord: "film", wordTrans: "電影" },
+            { id: "C10", text: "It can help you understand the ______ of movies.", translation: "它可以幫你了解電影的______。", options: ["plots", "terms", "staff", "policies"], answer: 0, correctWord: "plots", wordTrans: "情節" },
+            { id: "C11", text: "You can use an image to ______ different types of bulbs apart.", translation: "你可以用圖片來______不同類型的燈泡。", options: ["tell", "take", "make", "keep"], answer: 0, correctWord: "tell", wordTrans: "tell ... apart (分辨)" },
+            { id: "C12", text: "______ a doubt, getting information is convenient.", translation: "毫無______地，獲取資訊很方便。", options: ["Without", " Within", "Under", "Above"], answer: 0, correctWord: "Without", wordTrans: "Without a doubt (無庸置疑)" },
+            { id: "C13", text: "Organizations use them to explain ______ policies.", translation: "機構利用它們來解釋______的政策。", options: ["complicated", "unforgettable", "marine", "frequent"], answer: 0, correctWord: "complicated", wordTrans: "複雜的" },
+            { id: "C14", text: "Ren Baos are used to correct ______.", translation: "懶人包被用來更正______。", options: ["misunderstandings", "adventures", "generations", "aquariums"], answer: 0, correctWord: "misunderstandings", wordTrans: "誤解" },
+            { id: "C15", text: "Information may be influenced by creators' personal ______.", translation: "資訊可能會受到創作者個人______的影響。", options: ["preferences", "amounts", "varieties", "memories"], answer: 0, correctWord: "preferences", wordTrans: "偏好" },
+            { id: "C16", text: "It can be ______ to rely on Lan Ren Baos.", translation: "依賴懶人包可能是______。", options: ["risky", "available", "unique", "frequent"], answer: 0, correctWord: "risky", wordTrans: "有風險的" },
+            { id: "C17", text: "You should ______ that information might not be balanced.", translation: "你應該______資訊可能不夠全面。", options: ["keep in mind", "fall asleep", "catch up on", "sold out"], answer: 0, correctWord: "keep in mind", wordTrans: "記住" },
+            // NEW Lan Ren Bao Questions from Images
+            { id: "C31", text: "The Lan Ren Bao was created for those who couldn't follow the long discussions ______ on PTT.", translation: "懶人包是為了那些無法跟上 PTT 長篇討論的人創造的。", options: ["taken place", "taking place", "took place", "to take place"], answer: 1, correctWord: "taking place", wordTrans: "正在發生的" },
+            { id: "C32", text: "______ themes, they have been highly popular.", translation: "______主題，它們一直很受歡迎。", options: ["With", "For", "By", "As"], answer: 0, correctWord: "With", wordTrans: "有了..." },
+            { id: "C33", text: "Among them, blogs and short videos are the most common ______.", translation: "其中，部落格和短片是最常見的______。", options: ["ones", "forms", "types", "pieces"], answer: 0, correctWord: "ones", wordTrans: "種類/個" },
+            
+            // Night Tour (Bold & Key words)
+            { id: "C18", text: "Jason used to teach ______ at a university.", translation: "Jason 曾在大學教______。", options: ["biology", "history", "math", "art"], answer: 0, correctWord: "biology", wordTrans: "生物學" },
+            { id: "C19", text: "He taught at a ______ before he retired.", translation: "他在退休前在______任教。", options: ["university", "aquarium", "museum", "high school"], answer: 0, correctWord: "university", wordTrans: "大學" },
+            { id: "C20", text: "He ______ last year.", translation: "他去年______了。", options: ["retired", "lasted", "contained", "gathered"], answer: 0, correctWord: "retired", wordTrans: "退休" },
+            { id: "C21", text: "The guided tour ______ one and a half hours.", translation: "導覽行程______了一個半小時。", options: ["lasted", "shortened", "digested", "hurried"], answer: 0, correctWord: "lasted", wordTrans: "持續" },
+            { id: "C22", text: "My favorite ______ of the tour was our visit to Penguin Island.", translation: "此行我最喜歡的______是我們參觀企鵝島。", options: ["memory", "biology", "staff", "doubt"], answer: 0, correctWord: "memory", wordTrans: "回憶" },
+            { id: "C23", text: "It was a souvenir of this ______ experience.", translation: "這是這次______經歷的紀念品。", options: ["unforgettable", "complicated", "frequent", "risky"], answer: 0, correctWord: "unforgettable", wordTrans: "難忘的" },
+            { id: "C24", text: "I watched the whale dance before I ______.", translation: "我看著鯨魚跳舞直到我______。", options: ["fell asleep", "hurried up", "caught up", "relied on"], answer: 0, correctWord: "fell asleep", wordTrans: "睡著" },
+            { id: "C25", text: "This ______ made me realize the beauty of marine life.", translation: "這次______讓我體會到海洋生物之美。", options: ["adventure", "term", "amount", "policy"], answer: 0, correctWord: "adventure", wordTrans: "冒險/奇遇" },
+            { id: "C26", text: "We should watch over our oceans for future ______.", translation: "我們應該為後______守護我們的海洋。", options: ["generations", "creators", "newcomers", "preferences"], answer: 0, correctWord: "generations", wordTrans: "世代" },
+            { id: "C27", text: "Visitors can get a ______ look at the aquarium.", translation: "遊客可以參觀水族館的______。", options: ["behind-the-scenes", "cross-mind", "long-term", "short-term"], answer: 0, correctWord: "behind-the-scenes", wordTrans: "幕後/後台" },
+            { id: "C28", text: "Activities include interacting with ocean ______.", translation: "活動包括與海洋______互動。", options: ["creatures", "bulbs", "plots", "policies"], answer: 0, correctWord: "creatures", wordTrans: "生物" },
+            { id: "C29", text: "The discounted tickets are likely to be ______ quickly.", translation: "優惠票很可能很快就會______。", options: ["sold out", "caught up", "told apart", "kept in mind"], answer: 0, correctWord: "sold out", wordTrans: "售完" },
+            { id: "C30", text: "So ______! Book your night tour today!", translation: "所以______！今天就預訂你的夜宿行程！", options: ["hurry up", "rely on", "fall asleep", "watch over"], answer: 0, correctWord: "hurry up", wordTrans: "快點" },
+            // NEW Night Tour Questions from Images
+            { id: "C34", text: "Have you ever thought of sleeping next to a whale to see ______ it feels like?", translation: "你有沒有想過睡在鯨魚旁邊，看看感覺______？", options: ["what", "how", "that", "which"], answer: 0, correctWord: "what", wordTrans: "什麼" },
+            { id: "C35", text: "You may watch them being fed ______ the employees.", translation: "你可以看著牠們被員工______。", options: ["by", "with", "for", "to"], answer: 0, correctWord: "by", wordTrans: "被" },
+            { id: "C36", text: "If you are looking for fun and ______ experiences.", translation: "如果你正在尋找樂趣和______體驗。", options: ["educational", "boring", "scary", "balanced"], answer: 0, correctWord: "educational", wordTrans: "教育性的" },
+            { id: "C37", text: "Discounted tickets are now ______.", translation: "優惠票現在______。", options: ["available", "risky", "frequent", "complicated"], answer: 0, correctWord: "available", wordTrans: "可獲得的" },
+            { id: "C38", text: "They are likely to ______ soon!", translation: "它們很可能很快______！", options: ["be sold out", "sell out", "sold out", "selling out"], answer: 0, correctWord: "be sold out", wordTrans: "被售完" },
+            { id: "C39", text: "Ivy found a Lan Ren Bao... it didn't cross my ______.", translation: "Ivy 找到了一個懶人包... 我沒______過。", options: ["mind", "head", "brain", "thought"], answer: 0, correctWord: "mind", wordTrans: "腦海" }
+        ];
+
+        // --- 3. 閱讀理解 (Comprehension) ---
+        const compBank = [
+            { id: "R01", text: "In the 'Night Tour' article, where did the author spend the night?", translation: "在「夜宿」文章中，作者在哪裡過夜？", options: ["Next to the Whale Pool", "In the Underwater Tunnel", "At the Penguin Island", "In the Touch Pool"], answer: 0, correctWord: "Next to the Whale Pool", wordTrans: "鯨魚池旁" },
+            { id: "R02", text: "Who was Jason in the 'Night Tour' diary?", translation: "日記中的 Jason 是誰？", options: ["A tour guide and former teacher", "A student visiting the museum", "A staff member feeding penguins", "The author's father"], answer: 0, correctWord: "A tour guide", wordTrans: "導遊(前大學老師)" },
+            { id: "R03", text: "What is the main purpose of a 'Lan Ren Bao'?", translation: "「懶人包」的主要目的是什麼？", options: ["To help people digest info easily", "To teach people how to cook", "To sell more newspapers", "To make policies more complicated"], answer: 0, correctWord: "To help digest info", wordTrans: "幫助消化資訊" },
+            { id: "R04", text: "When and where did the term 'Lan Ren Bao' start?", translation: "「懶人包」一詞何時何地開始？", options: ["2007 on PTT (Taiwan)", "2010 on Facebook (USA)", "1999 on Yahoo (Japan)", "2020 on Instagram (UK)"], answer: 0, correctWord: "2007 on PTT", wordTrans: "2007年台灣PTT" },
+            { id: "R05", text: "Why might 'Lan Ren Baos' be risky?", translation: "為什麼「懶人包」可能有風險？", options: ["Info might be unbalanced/biased", "They are too expensive", "They are too long to read", "They are only for children"], answer: 0, correctWord: "Info might be unbalanced", wordTrans: "資訊可能不平衡/偏頗" },
+            { id: "R06", text: "What does the phrase 'tell apart' mean in the text?", translation: "文中 'tell apart' 是什麼意思？", options: ["To distinguish/identify difference", "To speak separately", "To break into pieces", "To tell a secret"], answer: 0, correctWord: "To distinguish", wordTrans: "分辨/區分" },
+            { id: "R07", text: "According to the text, what should you do with info from Lan Ren Baos?", translation: "根據課文，你應該對懶人包的資訊做什麼？", options: ["Double-check before trusting", "Memorize it immediately", "Share it without reading", "Delete it right away"], answer: 0, correctWord: "Double-check", wordTrans: "再次查證" },
+            { id: "R08", text: "What did the author enjoy watching at the beginning of the Night Tour?", translation: "作者在夜宿行程一開始喜歡看什麼？", options: ["Colorful fish swimming", "Sharks eating dinner", "Sea turtles sleeping", "Penguins jumping"], answer: 0, correctWord: "Colorful fish", wordTrans: "五顏六色的魚" }
+        ];
+
+        // --- 4. Articles (Updated Content) ---
+        const articles = [
+            {
+                title: "Lan Ren Bao (懶人包)",
+                text: "\"I'm going to Hualien tomorrow, but I have no idea where to go and what to eat,\" Frank said. \"If I were you, I would search for a Lan Ren Bao. It usually contains everything in a short page,\" his friend replied.\n\nDoes the choice of a Lan Ren Bao also cross your mind very often? Lan Ren Bao is a Chinese term for a large amount of information that has been organized to help people digest it easily. People can use it to quickly get an overview of an unfamiliar subject.\n\nIn 2007, the idea of a Lan Ren Bao started in Taiwan, and this term became popular on PTT, a social networking site. The PTT users found that many newcomers often had trouble catching up on the discussions that were taking place. Thus, some kind users gathered all the pieces of information and had them shortened into an article for the newcomers to read.\n\nAs time passed, many other types of Lan Ren Baos have been created. Short videos, blogs, and pictures are some of the most common ones. Also, there are a variety of themes for Lan Ren Baos. For example, you may want to try watching a Marvel film for the first time. In this case, a fifteen-minute Lan Ren Bao video can help you understand the plots of more than twenty Marvel movies. Or an inexperienced janitor can use a Lan Ren Bao image to tell different types of light bulbs apart within just a few seconds.\n\nWithout a doubt, getting information from a Lan Ren Bao is a lot more convenient. For some people, their lives would definitely be harder if they didn't use Lan Ren Baos so often. Organizations like the government also make Lan Ren Baos to explain complicated policies or to correct misunderstandings.\n\nHowever, Lan Ren Baos may be influenced by their creators' personal preferences. Therefore, some people worry that the information they contain may not be truly balanced. As a result, it can be risky to rely on Lan Ren Baos as the only way to learn something new.\n\nAre you a frequent user of Lan Ren Baos? If so, keep in mind that while Lan Ren Baos can be useful to learn about something quickly, you should double-check them before completely trusting the information they offer.",
+                translation: "「我明天要去花蓮，但我不知道去哪裡，吃什麼，」Frank 說。「如果我是你，我會搜尋懶人包。它通常在短短一頁中包含所有內容，」他的朋友回答。\n\n選擇懶人包這個念頭是否也常閃過你的腦海？「懶人包」是一個中文術語，指的是為了幫助人們輕鬆消化而整理過的大量資訊。人們可以用它來快速了解一個不熟悉的主題概況。\n\n2007年，懶人包的概念起源於台灣，並在社群網站 PTT 上流行起來。PTT 用戶發現許多新手常在跟上討論進度上有困難。因此，一些好心的用戶收集了所有資訊片段，並將其縮短成一篇文章供新手閱讀。\n\n隨著時間推移，許多其他類型的懶人包被創造出來。短片、部落格和圖片是最常見的幾種。此外，懶人包的主題也五花八門。例如，你可能想第一次嘗試看漫威電影。在這種情況下，一個15分鐘的懶人包影片可以幫助你了解超過20部漫威電影的情節。或者，一個沒經驗的清潔工可以用懶人包圖片在幾秒鐘內分辨出不同類型的燈泡。\n\n毫無疑問，從懶人包獲取資訊方便得多。對某些人來說，如果不常使用懶人包，生活肯定會更艱難。像政府這樣的機構也製作懶人包來解釋複雜的政策或更正誤解。\n\n然而，懶人包可能會受到創作者個人偏好的影響。因此，有些人擔心其中包含的資訊可能不夠全面（平衡）。因此，依賴懶人包作為學習新事物的唯一途徑可能是有風險的。\n\n你是懶人包的常客嗎？如果是，請記住，雖然懶人包對於快速了解某事很有用，但在完全信任其提供的資訊之前，你應該再次查證。"
+            },
+            {
+                title: "Night Tour: Schedule (夜宿行程表)",
+                text: "Time: All year\nRegular fee: NT$2,480 / adult; NT$1,190 / child\nEarly-bird discount: NT$2,080 / adult; NT$790 / child\n\nSchedule:\n16:20 Arrival at the museum\n16:30 Guided tour begins: Underwater Tunnel, Whale Pool\n17:00 Touch Pool\n17:30 Penguin Island\n18:00 Guided tour ends: dinner and free time\n19:00 DIY course: make your own souvenir\n20:00 Enjoy late-night snacks and a big-screen movie\n22:00 Bedtime\n\nNotice:\nGuests can choose where to sleep. Sleeping bags and pillows will be provided.\nThe lights will be turned off at 12:30 a.m.\nDon't forget to bring a change of clothes, a toothbrush, and toothpaste.",
+                translation: "時間：全年\n原價：成人 NT$2,480 / 兒童 NT$1,190\n早鳥優惠：成人 NT$2,080 / 兒童 NT$790\n\n行程表：\n16:20 抵達博物館\n16:30 導覽開始：海底隧道、鯨魚池\n17:00 觸摸池\n17:30 企鵝島\n18:00 導覽結束：晚餐與自由時間\n19:00 DIY 課程：製作自己的紀念品\n20:00 享用宵夜與大螢幕電影\n22:00 就寢\n\n注意事項：\n遊客可選擇睡覺地點。將提供睡袋和枕頭。\n燈光將於凌晨 12:30 熄滅。\n別忘了帶換洗衣物、牙刷和牙膏。"
+            },
+            {
+                title: "Night Tour: Dear Diary (日記)",
+                text: "Dear Diary,\nLast night, I went on a night tour at the National Museum of Marine Biology and Aquarium. The tour only cost me NT$2,080 because I had bought a discounted ticket online a few months before.\n\nOur tour guide, Jason, knew everything about marine animals. He used to teach biology at a university, but he retired last year. The guided tour lasted one and a half hours, and we spent about thirty minutes looking at each display. At the beginning of the tour, I enjoyed watching colorful fish swimming among the rocks and water plants in the Underwater Tunnel.\n\nThen, we got to the Touch Pool. I thought that we wouldn't be able to touch anything in the museum, but Jason said we could gently touch the sea animals there. I had always wondered what sea animals felt like, so I was quite excited. The crabs, starfish, and sea cucumbers felt strange but amazing. My favorite memory of the tour was our visit to the Penguin Island. I was surprised that the penguins could swim underwater so well. I could never get tired of watching them. After dinner, I even made my own sand painting of the island. It was a souvenir of this unforgettable experience.\n\nAt night, I slept on the floor next to the Whale Pool. I watched the whale dance in the water for a few minutes before I fell asleep. This adventure made me realize the beauty of marine life.",
+                translation: "親愛的日記，\n昨晚，我去國立海洋生物博物館和水族館參加了夜宿行程。這次行程只花了我 NT$2,080，因為幾個月前我在網上買了優惠票。\n\n我們的導遊 Jason 對海洋動物無所不知。他曾經在大學教生物，但去年退休了。導覽行程持續了一個半小時，我們在每個展示區大約停留了三十分鐘。在行程開始時，我很享受在海底隧道觀看五顏六色的魚在岩石和水草間游動。\n\n接著我們到了觸摸池。我以為我們不能觸摸博物館裡的任何東西，但 Jason 說我們可以輕輕觸摸那裡的海生動物。我一直想知道海生動物摸起來是什麼感覺，所以我非常興奮。螃蟹、海星和海參摸起來很奇怪但很奇妙。此行我最喜歡的回憶是參觀企鵝島。我很驚訝企鵝在水下能游得這麼好。我永遠看不膩牠們。晚餐後，我甚至製作了自己的島嶼沙畫。這是這次難忘經歷的紀念品。\n\n晚上，我睡在鯨魚池旁的地板上。我看著鯨魚在水中跳舞幾分鐘，然後就睡著了。這次冒險讓我體會到了海洋生物之美。"
+            }
+        ];
+
+        // --- STATE & LOGIC ---
+        let state = {
+            questions: [],
+            idx: 0,
+            score: 0,
+            answers: [],
+            startTime: 0,
+            timer: null,
+            mode: 'vocab'
+        };
+
+        function showDashboard() {
+            switchView('view-dashboard');
+            document.getElementById('bar-fill').style.width = '0%';
+            clearInterval(state.timer);
+        }
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function filterStudy(btn, type) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderStudy(type);
+        }
+
+        function startStudy() {
+            switchView('view-study');
+            renderStudy('all');
+        }
+
+        function renderStudy(type) {
+            const container = document.getElementById('study-content');
+            container.innerHTML = '';
+
+            if (type === 'all' || type === 'article') {
+                articles.forEach(art => {
+                    const div = document.createElement('div');
+                    div.className = 'article-box liquid-card';
+                    div.innerHTML = `
+                        <div class="art-t">${art.title}</div>
+                        <div class="art-p">${art.text}</div>
+                        <div class="art-tr">${art.translation}</div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            if (type === 'all' || type === 'vocab') {
+                const all = [...vocabBank, ...clozeBank];
+                const unique = all.filter((v,i,a)=>a.findIndex(t=>(t.correctWord === v.correctWord))===i);
+                
+                unique.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'list-item';
+                    const sentence = item.text.replace('______', `<span style="text-decoration:underline;color:var(--accent-cyan)">${item.correctWord}</span>`);
+                    row.innerHTML = `
+                        <div style="display:flex; align-items:baseline;">
+                            <span class="word-h">${item.correctWord}</span>
+                            <span class="word-trans">${item.wordTrans}</span>
+                        </div>
+                        <div class="word-sent">${sentence}</div>
+                    `;
+                    container.appendChild(row);
+                });
+            }
+        }
+
+        function startQuiz(mode) {
+            state.mode = mode;
+            let source = [];
+            if(mode === 'vocab') source = vocabBank;
+            else if(mode === 'cloze') source = clozeBank;
+            else if(mode === 'comp') source = compBank;
+
+            state.questions = JSON.parse(JSON.stringify(source));
+            for (let i = state.questions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [state.questions[i], state.questions[j]] = [state.questions[j], state.questions[i]];
+            }
+
+            state.idx = 0;
+            state.score = 0;
+            state.answers = [];
+            state.startTime = Date.now();
+            
+            document.getElementById('q-total').innerText = state.questions.length;
+            switchView('view-quiz');
+            startTimer();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (state.idx >= state.questions.length) {
+                endQuiz();
+                return;
+            }
+
+            const q = state.questions[state.idx];
+            document.getElementById('q-current').innerText = state.idx + 1;
+            
+            const pct = (state.idx / state.questions.length) * 100;
+            document.getElementById('bar-fill').style.width = `${pct}%`;
+
+            const box = document.getElementById('question-box');
+            box.classList.remove('exiting');
+            void box.offsetWidth;
+
+            box.innerHTML = `
+                <div class="question-card">
+                    <div class="q-text">${q.text}</div>
+                    <button class="trans-btn" onclick="this.nextElementSibling.style.display='block';this.style.display='none'">顯示中文翻譯</button>
+                    <div class="trans-text">${q.translation}</div>
+                </div>
+                <div class="options-container">
+                    ${q.options.map((opt, i) => `
+                        <div class="opt-btn" onclick="handleAnswer(${i})">
+                            <div class="opt-marker"></div>
+                            <span>${opt}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function handleAnswer(choiceIdx) {
+            const q = state.questions[state.idx];
+            const btns = document.querySelectorAll('.opt-btn');
+            
+            btns.forEach(b => b.onclick = null);
+
+            const isCorrect = (choiceIdx === q.answer);
+            if (isCorrect) state.score++;
+
+            if (isCorrect) {
+                btns[choiceIdx].classList.add('selected', 'correct');
+            } else {
+                btns[choiceIdx].classList.add('selected', 'wrong');
+                btns[q.answer].classList.add('correct');
+            }
+
+            state.answers.push({ q, choiceIdx, isCorrect });
+
+            const box = document.getElementById('question-box');
+            setTimeout(() => {
+                box.classList.add('exiting');
+                setTimeout(() => {
+                    state.idx++;
+                    loadQuestion();
+                }, 250); 
+            }, 1000);
+        }
+
+        function startTimer() {
+            clearInterval(state.timer);
+            const el = document.getElementById('timer');
+            state.timer = setInterval(() => {
+                const diff = Math.floor((Date.now() - state.startTime) / 1000);
+                const m = String(Math.floor(diff / 60)).padStart(2, '0');
+                const s = String(diff % 60).padStart(2, '0');
+                el.innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function endQuiz() {
+            clearInterval(state.timer);
+            document.getElementById('bar-fill').style.width = '100%';
+            
+            const final = Math.round((state.score / state.questions.length) * 100);
+            document.getElementById('final-score').innerText = final;
+            
+            const diff = Math.floor((Date.now() - state.startTime) / 1000);
+            document.getElementById('time-taken').innerText = `總耗時: ${Math.floor(diff/60)}分 ${diff%60}秒`;
+
+            const container = document.getElementById('mistake-container');
+            container.innerHTML = '';
+            
+            const wrong = state.answers.filter(a => !a.isCorrect);
+            if (wrong.length === 0) {
+                container.innerHTML = '<div style="color:var(--success); text-align:center; padding:20px;">太強了！全對！</div>';
+            } else {
+                wrong.forEach(w => {
+                    const item = document.createElement('div');
+                    item.className = 'mistake-card';
+                    item.innerHTML = `
+                        <div style="font-weight:600; color:#fff; margin-bottom:5px;">${w.q.text}</div>
+                        <div style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:8px;">${w.q.translation}</div>
+                        <div style="font-size:0.9rem;">
+                            <span style="color:var(--error)">你的答案: ${w.q.options[w.choiceIdx]}</span><br>
+                            <span style="color:var(--success)">正確答案: ${w.q.options[w.q.answer]}</span>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+
+            switchView('view-result');
+        }
+
+        function retryQuiz() {
+            startQuiz(state.mode);
+        }
+    </script>
+</body>
+</html>
